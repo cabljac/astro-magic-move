@@ -20,8 +20,9 @@ export interface MagicMoveProps {
 	 * - `'scroll'`: animate when element enters viewport (default)
 	 * - `'click'`: toggle forward on click, wraps around
 	 * - `'auto'`: animate immediately when the element mounts
+	 * - `'none'`: no built-in trigger; control steps externally via the element's `step` property
 	 */
-	trigger?: "scroll" | "click" | "auto";
+	trigger?: "scroll" | "click" | "auto" | "none";
 
 	/** Animation duration in ms. Default: `800` */
 	duration?: number;

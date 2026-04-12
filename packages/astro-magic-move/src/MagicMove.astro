@@ -76,14 +76,30 @@ const stepsJson = JSON.stringify(compiledSteps);
 
 	class MagicMoveElement extends HTMLElement {
 		private renderer: MagicMoveRenderer | null = null;
-		private steps: any[] = [];
-		private currentStep = 0;
+		private _steps: any[] = [];
+		private _currentStep = 0;
+		private _animating = false;
+		private _pendingStep: number | null = null;
 		private observer: IntersectionObserver | null = null;
+
+		get step(): number {
+			return this._currentStep;
+		}
+
+		set step(value: number) {
+			const idx = Number(value);
+			if (Number.isNaN(idx)) return;
+			this.animateToStep(idx);
+		}
+
+		get totalSteps(): number {
+			return this._steps.length;
+		}
 
 		connectedCallback() {
 			const dataScript = this.querySelector('script[type="application/json"]');
 			if (!dataScript?.textContent) return;
-			this.steps = JSON.parse(dataScript.textContent);
+			this._steps = JSON.parse(dataScript.textContent);
 			dataScript.remove();
 
 			const container = this.querySelector("pre");
@@ -104,10 +120,10 @@ const stepsJson = JSON.stringify(compiledSteps);
 			});
 
 			if (trigger === "auto") {
-				this.currentStep = -1;
+				this._currentStep = -1;
 			} else {
-				this.renderer.replace(this.steps[0]);
-				this.currentStep = 0;
+				this.renderer.replace(this._steps[0]);
+				this._currentStep = 0;
 			}
 			this.setupTrigger(trigger, threshold);
 		}
@@ -124,12 +140,14 @@ const stepsJson = JSON.stringify(compiledSteps);
 				case "click":
 					this.style.cursor = "pointer";
 					this.addEventListener("click", () => {
-						const next = (this.currentStep + 1) % this.steps.length;
+						const next = (this._currentStep + 1) % this._steps.length;
 						this.animateToStep(next);
 					});
 					break;
 				case "auto":
 					requestAnimationFrame(() => this.autoPlay());
+					break;
+				case "none":
 					break;
 			}
 		}
@@ -148,28 +166,43 @@ const stepsJson = JSON.stringify(compiledSteps);
 		}
 
 		private async autoPlay() {
-				const duration = Number(this.dataset.duration ?? 800);
-				for (let i = 0; i < this.steps.length; i++) {
-					await this.animateToStep(i);
-					if (i < this.steps.length - 1) {
-						await new Promise((r) => setTimeout(r, duration + 200));
-					}
+			const duration = Number(this.dataset.duration ?? 800);
+			for (let i = 0; i < this._steps.length; i++) {
+				await this.animateToStep(i);
+				if (i < this._steps.length - 1) {
+					await new Promise((r) => setTimeout(r, duration + 200));
 				}
 			}
+		}
 
-			private async animateToStep(stepIndex: number) {
-			if (!this.renderer || stepIndex === this.currentStep) return;
-			if (stepIndex < 0 || stepIndex >= this.steps.length) return;
+		private async animateToStep(stepIndex: number) {
+			if (!this.renderer || stepIndex === this._currentStep) return;
+			if (stepIndex < 0 || stepIndex >= this._steps.length) return;
 
-			await this.renderer.render(this.steps[stepIndex]);
-			this.currentStep = stepIndex;
+			if (this._animating) {
+				this._pendingStep = stepIndex;
+				return;
+			}
 
-			this.dispatchEvent(
-				new CustomEvent("magic-move:step", {
-					detail: { step: stepIndex, total: this.steps.length },
-					bubbles: true,
-				}),
-			);
+			this._animating = true;
+			try {
+				await this.renderer.render(this._steps[stepIndex]);
+				this._currentStep = stepIndex;
+				this.dispatchEvent(
+					new CustomEvent("magic-move:step", {
+						detail: { step: stepIndex, total: this._steps.length },
+						bubbles: true,
+					}),
+				);
+			} finally {
+				this._animating = false;
+			}
+
+			if (this._pendingStep !== null) {
+				const next = this._pendingStep;
+				this._pendingStep = null;
+				this.animateToStep(next);
+			}
 		}
 	}
 

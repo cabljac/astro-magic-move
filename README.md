@@ -96,7 +96,33 @@ log(1)`,
 
 <!-- Scroll into viewport -->
 <MagicMove before={a} after={b} trigger="scroll" />
+
+<!-- No built-in trigger -->
+<MagicMove steps={steps} trigger="none" />
 ```
+
+### External control
+
+Use `trigger="none"` and drive steps from your own code:
+
+```astro
+<MagicMove id="demo" steps={steps} lang="typescript" trigger="none" />
+
+<button id="prev">Prev</button>
+<button id="next">Next</button>
+
+<script>
+  const el = document.querySelector('#demo')
+  document.getElementById('next').addEventListener('click', () => {
+    el.step = Math.min(el.step + 1, el.totalSteps - 1)
+  })
+  document.getElementById('prev').addEventListener('click', () => {
+    el.step = Math.max(el.step - 1, 0)
+  })
+</script>
+```
+
+The `step` setter animates to the given index. Read `el.step` for the current position and `el.totalSteps` for the count. External control also works alongside built-in triggers.
 
 ## Theming
 
@@ -123,16 +149,23 @@ Sensible defaults are built in — the component works without defining any vari
 | `after` | `string` | — | Code for final state (two-step shorthand) |
 | `steps` | `string[]` | — | Array of code strings (min 2) |
 | `lang` | `string` | `'typescript'` | Shiki language grammar |
-| `trigger` | `'scroll' \| 'click' \| 'auto'` | `'scroll'` | How the animation fires |
+| `trigger` | `'scroll' \| 'click' \| 'auto' \| 'none'` | `'scroll'` | How the animation fires |
 | `duration` | `number` | `800` | Animation duration in ms |
 | `stagger` | `number` | `0.3` | Token entrance stagger |
 | `threshold` | `number` | `0.4` | IntersectionObserver threshold (scroll only) |
 | `lineNumbers` | `boolean` | `false` | Show line numbers |
 | `class` | `string` | — | CSS classes on outer element |
 
-## Events
+## DOM API
 
-The custom element dispatches a `magic-move:step` event after each transition:
+The `<magic-move>` custom element exposes these properties for external control:
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `.step` | `number` (get/set) | Current step index. Setting it animates to that step. |
+| `.totalSteps` | `number` (get) | Total number of steps. |
+
+The element dispatches a `magic-move:step` event after each transition:
 
 ```js
 document.querySelector('magic-move')?.addEventListener('magic-move:step', (e) => {
