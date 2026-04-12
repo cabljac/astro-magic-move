@@ -1,0 +1,24 @@
+/* Core transition CSS from shiki-magic-move */
+@import "shiki-magic-move/style.css";
+
+/* Structural defaults — consumers can override via class prop */
+magic-move {
+	display: block;
+	position: relative;
+}
+
+.shiki-magic-move-container {
+	margin: 0;
+	overflow-x: auto;
+	overflow-y: hidden;
+	padding: 0.75rem 1rem;
+	font-family:
+		ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New",
+		monospace;
+	font-size: clamp(0.75rem, 2vw, 0.875rem);
+	line-height: 1.7;
+	text-align: left;
+	background: var(--shiki-background, #1e1e1e);
+	color: var(--shiki-foreground, #d4d4d4);
+	scrollbar-width: thin;
+}

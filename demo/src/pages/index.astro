@@ -1,0 +1,396 @@
+---
+export const prerender = true;
+
+import { MagicMove } from "astro-magic-move";
+import Base from "../layouts/Base.astro";
+import "astro-magic-move/styles";
+
+// ── Hero: auto-play ──────────────────────────────────────
+const heroSteps = [
+	`<!-- auto-plays on mount -->
+<MagicMove
+  before={before}
+  after={after}
+  lang="typescript"
+/>`,
+
+	`<!-- with custom duration -->
+<MagicMove
+  before={before}
+  after={after}
+  lang="typescript"
+  trigger="auto"
+  duration={800}
+/>`,
+];
+
+// ── Install + basic usage ────────────────────────────────
+const installSteps = [
+	`# click to continue
+pnpm add astro-magic-move`,
+
+	`# import styles once in a layout
+import 'astro-magic-move/styles'`,
+
+	`# then use the component anywhere
+import { MagicMove } from 'astro-magic-move'`,
+];
+
+// ── Before/after shorthand ───────────────────────────────
+const beforeAfterSteps = [
+`---
+import { MagicMove } from 'astro-magic-move'
+// click to see the template
+const before = \`const data = fetch('/api')\`
+const after = \`const data = await fetch('/api')
+const json = await data.json()\`
+---`,
+
+`---
+import { MagicMove } from 'astro-magic-move'
+
+const before = \`const data = fetch('/api')\`
+const after = \`const data = await fetch('/api')
+const json = await data.json()\`
+---
+
+<MagicMove
+  before={before}
+  after={after}
+  lang="typescript"
+  trigger="click"
+/>`,
+];
+
+// ── Multi-step ───────────────────────────────────────────
+const multiStepSteps = [
+`---
+// click to add more steps
+const steps = [
+  \`const x = 1\`,
+  \`const x = 1
+console.log(x)\`,
+]
+---`,
+
+`---
+// click to see the template
+const steps = [
+  \`const x = 1\`,
+  \`const x = 1
+console.log(x)\`,
+  \`function log(val: number) {
+  console.log(val)
+}
+log(1)\`,
+]
+---`,
+
+`---
+const steps = [
+  \`const x = 1\`,
+  \`const x = 1
+console.log(x)\`,
+  \`function log(val: number) {
+  console.log(val)
+}
+log(1)\`,
+]
+---
+
+<MagicMove
+  steps={steps}
+  lang="typescript"
+  trigger="click"
+/>`,
+];
+
+// ── Trigger modes ────────────────────────────────────────
+const triggerSteps = [
+`<!-- click to see other triggers -->
+
+<!-- auto-play on mount -->
+<MagicMove
+  before={a}
+  after={b}
+  trigger="auto"
+/>`,
+
+`<!-- click to see other triggers -->
+
+<!-- click to advance steps -->
+<MagicMove
+  steps={steps}
+  trigger="click"
+/>`,
+
+`<!-- scroll into viewport -->
+<MagicMove
+  before={a}
+  after={b}
+  trigger="scroll"
+  threshold={0.4}
+/>`,
+];
+
+// ── CSS variables theming ────────────────────────────────
+const themeSteps = [
+`/* click to add token colors */
+:root {
+  --shiki-foreground: #d4d4d4;
+  --shiki-background: #1e1e1e;
+}`,
+
+`/* click to see dark mode support */
+:root {
+  --shiki-foreground: #d4d4d4;
+  --shiki-background: #1e1e1e;
+  --shiki-token-keyword: #c586c0;
+  --shiki-token-string: #ce9178;
+  --shiki-token-function: #dcdcaa;
+  --shiki-token-comment: #6a9955;
+}`,
+
+`/* adapts to light/dark mode */
+:root {
+  --shiki-foreground: #3f3f46;
+  --shiki-background: #fafafa;
+  --shiki-token-keyword: #7c3aed;
+  --shiki-token-string: #16a34a;
+  --shiki-token-function: #2563eb;
+  --shiki-token-comment: #a1a1aa;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --shiki-foreground: #d4d4d4;
+    --shiki-background: #1e1e1e;
+    --shiki-token-keyword: #c586c0;
+    --shiki-token-string: #ce9178;
+    --shiki-token-function: #dcdcaa;
+    --shiki-token-comment: #6a9955;
+  }
+}`,
+];
+
+const markdownContent = `# astro-magic-move
+
+Animated code morphing for Astro. Build-time tokenization, zero-framework client JS, CSS-variable theming.
+
+## Install
+
+\\\`\\\`\\\`bash
+pnpm add astro-magic-move
+\\\`\\\`\\\`
+
+Import styles once in a layout:
+
+\\\`\\\`\\\`astro
+---
+import 'astro-magic-move/styles'
+---
+\\\`\\\`\\\`
+
+## Before / After
+
+\\\`\\\`\\\`astro
+---
+import { MagicMove } from 'astro-magic-move'
+
+const before = \\\`const data = fetch('/api')\\\`
+const after = \\\`const data = await fetch('/api')
+const json = await data.json()\\\`
+---
+
+<MagicMove
+  before={before}
+  after={after}
+  lang="typescript"
+  trigger="click"
+/>
+\\\`\\\`\\\`
+
+## Multi-step
+
+\\\`\\\`\\\`astro
+---
+const steps = [
+  \\\`const x = 1\\\`,
+  \\\`const x = 1
+console.log(x)\\\`,
+  \\\`function log(val: number) {
+  console.log(val)
+}
+log(1)\\\`,
+]
+---
+
+<MagicMove
+  steps={steps}
+  lang="typescript"
+  trigger="click"
+/>
+\\\`\\\`\\\`
+
+## Trigger Modes
+
+\\\`\\\`\\\`astro
+<!-- auto-play on mount -->
+<MagicMove before={a} after={b} trigger="auto" />
+
+<!-- click to advance steps -->
+<MagicMove steps={steps} trigger="click" />
+
+<!-- scroll into viewport -->
+<MagicMove before={a} after={b} trigger="scroll" threshold={0.4} />
+\\\`\\\`\\\`
+
+## CSS Variable Theming
+
+\\\`\\\`\\\`css
+:root {
+  --shiki-foreground: #d4d4d4;
+  --shiki-background: #1e1e1e;
+  --shiki-token-keyword: #c586c0;
+  --shiki-token-string: #ce9178;
+  --shiki-token-function: #dcdcaa;
+  --shiki-token-comment: #6a9955;
+}
+\\\`\\\`\\\`
+
+## Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| \\\`before\\\` | \\\`string\\\` | — | Code for initial state (two-step shorthand) |
+| \\\`after\\\` | \\\`string\\\` | — | Code for final state (two-step shorthand) |
+| \\\`steps\\\` | \\\`string[]\\\` | — | Array of code strings (min 2) |
+| \\\`lang\\\` | \\\`string\\\` | \\\`'typescript'\\\` | Shiki language grammar |
+| \\\`trigger\\\` | \\\`'scroll' \\| 'click' \\| 'auto'\\\` | \\\`'scroll'\\\` | How the animation fires |
+| \\\`duration\\\` | \\\`number\\\` | \\\`800\\\` | Animation duration in ms |
+| \\\`stagger\\\` | \\\`number\\\` | \\\`0.3\\\` | Token entrance stagger |
+| \\\`threshold\\\` | \\\`number\\\` | \\\`0.4\\\` | IntersectionObserver threshold (scroll only) |
+| \\\`lineNumbers\\\` | \\\`boolean\\\` | \\\`false\\\` | Show line numbers |
+| \\\`class\\\` | \\\`string\\\` | — | CSS classes on outer element |
+`;
+
+const markdownLines = markdownContent.trim().split("\n").length;
+---
+
+<Base title="astro-magic-move">
+	<header class="relative overflow-hidden pt-12 sm:pt-20 px-4 sm:px-8 pb-6 sm:pb-8 text-center">
+		<div class="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_60%_50%_at_50%_0%,rgba(139,92,246,0.08),transparent),radial-gradient(ellipse_40%_60%_at_80%_20%,rgba(79,160,255,0.05),transparent)]"></div>
+		<div class="relative max-w-2xl mx-auto">
+			<p class="font-mono text-[0.7rem] tracking-[0.15em] uppercase text-zinc-600 mb-4">astro component</p>
+			<h1 class="font-mono text-[clamp(1.75rem,5vw,2.5rem)] font-medium leading-tight -tracking-wide bg-gradient-to-br from-zinc-200 from-30% to-violet-400 bg-clip-text text-transparent">astro-magic-move</h1>
+			<p class="text-[0.95rem] text-zinc-600 max-w-sm mx-auto mt-4 leading-relaxed">
+				Animated code morphing for Astro. Build-time tokenization,
+				zero-framework client JS, CSS-variable theming.
+			</p>
+			<div class="flex items-center justify-center gap-3 mt-5">
+				<button
+					id="copy-md"
+					type="button"
+					aria-label="Copy docs as markdown"
+					class="inline-flex items-center gap-1.5 px-3 py-1.5 font-mono text-[0.6875rem] text-zinc-600 bg-white/[0.03] border border-white/[0.08] rounded-md cursor-pointer transition-colors hover:text-zinc-400 hover:border-white/[0.15]"
+				>
+					<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+					<span>Copy docs as markdown ({markdownLines} lines)</span>
+				</button>
+				<a
+					href="https://github.com/cabljac/astro-magic-move"
+					target="_blank"
+					rel="noopener"
+					aria-label="GitHub repository"
+					class="inline-flex items-center px-2 py-1.5 text-zinc-600 bg-white/[0.03] border border-white/[0.08] rounded-md transition-colors hover:text-zinc-400 hover:border-white/[0.15]"
+				>
+					<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+				</a>
+			</div>
+			<div class="mt-8 text-left">
+				<div class="bg-[#0c0c0e] border border-white/[0.06] rounded-lg sm:rounded-[10px] overflow-hidden">
+					<div class="flex items-center gap-3 px-3.5 py-2.5 border-b border-white/[0.04]">
+						<div class="flex gap-1.5">
+							<span class="w-2 h-2 rounded-full bg-white/[0.08]"></span>
+							<span class="w-2 h-2 rounded-full bg-white/[0.08]"></span>
+							<span class="w-2 h-2 rounded-full bg-white/[0.08]"></span>
+						</div>
+						<span class="font-mono text-[0.6875rem] text-zinc-800">usage.astro</span>
+					</div>
+					<MagicMove steps={heroSteps} lang="astro" trigger="auto" duration={1200} />
+				</div>
+			</div>
+		</div>
+	</header>
+
+	<main class="max-w-2xl mx-auto px-4 sm:px-8 pt-6 sm:pt-8 pb-16">
+		{[
+			{ tag: "install", title: "Get started", desc: "Three steps to your first animation.", label: "terminal", steps: installSteps, lang: "shellscript", trigger: "click" as const },
+			{ tag: "before / after", title: "Two-step shorthand", desc: "The simplest way to animate between two code states.", label: "page.astro", steps: beforeAfterSteps, lang: "astro", trigger: "click" as const },
+			{ tag: "steps", title: "Multi-step transitions", desc: "Pass an array for more than two states.", label: "page.astro", steps: multiStepSteps, lang: "astro", trigger: "click" as const },
+			{ tag: "triggers", title: "Trigger modes", desc: "Three ways to fire the animation.", label: "template", steps: triggerSteps, lang: "astro", trigger: "click" as const },
+		].map((demo) => (
+			<section class="mb-10 sm:mb-14">
+				<div class="mb-4">
+					<span class="inline-block font-mono text-[0.625rem] tracking-widest uppercase text-zinc-500 bg-white/[0.04] border border-white/[0.08] px-2 py-0.5 rounded mb-2">{demo.tag}</span>
+					<h2 class="text-xl font-semibold text-zinc-300 -tracking-tight mt-1">{demo.title}</h2>
+					<p class="text-sm text-zinc-600 mt-1">{demo.desc}</p>
+				</div>
+				<div class="bg-[#0c0c0e] border border-white/[0.06] rounded-lg sm:rounded-[10px] overflow-hidden text-left">
+					<div class="flex items-center gap-3 px-3.5 py-2.5 border-b border-white/[0.04]">
+						<div class="flex gap-1.5">
+							<span class="w-2 h-2 rounded-full bg-white/[0.08]"></span>
+							<span class="w-2 h-2 rounded-full bg-white/[0.08]"></span>
+							<span class="w-2 h-2 rounded-full bg-white/[0.08]"></span>
+						</div>
+						<span class="font-mono text-[0.6875rem] text-zinc-800">{demo.label}</span>
+					</div>
+					<MagicMove steps={demo.steps} lang={demo.lang} trigger={demo.trigger} />
+				</div>
+			</section>
+		))}
+
+		<section class="mb-10 sm:mb-14">
+			<div class="mb-4">
+				<span class="inline-block font-mono text-[0.625rem] tracking-widest uppercase text-zinc-500 bg-white/[0.04] border border-white/[0.08] px-2 py-0.5 rounded mb-2">theming</span>
+				<h2 class="text-xl font-semibold text-zinc-300 -tracking-tight mt-1">CSS variable theming</h2>
+				<p class="text-sm text-zinc-600 mt-1">Define <code class="font-mono text-[0.8em] text-violet-400 bg-violet-400/10 px-1 py-0.5 rounded">--shiki-*</code> variables to control syntax colors.</p>
+			</div>
+			<div class="bg-[#0c0c0e] border border-white/[0.06] rounded-lg sm:rounded-[10px] overflow-hidden text-left">
+				<div class="flex items-center gap-3 px-3.5 py-2.5 border-b border-white/[0.04]">
+					<div class="flex gap-1.5">
+						<span class="w-2 h-2 rounded-full bg-white/[0.08]"></span>
+						<span class="w-2 h-2 rounded-full bg-white/[0.08]"></span>
+						<span class="w-2 h-2 rounded-full bg-white/[0.08]"></span>
+					</div>
+					<span class="font-mono text-[0.6875rem] text-zinc-800">global.css</span>
+				</div>
+				<MagicMove steps={themeSteps} lang="css" trigger="click" />
+			</div>
+		</section>
+	</main>
+
+	<script is:inline define:vars={{ markdownContent }}>
+		const defaultLabel = document.querySelector("#copy-md span")?.textContent;
+		document.getElementById("copy-md")?.addEventListener("click", async (e) => {
+			const span = e.currentTarget.querySelector("span");
+			try {
+				await navigator.clipboard.writeText(markdownContent);
+				span.textContent = "copied!";
+				setTimeout(() => { span.textContent = defaultLabel; }, 2000);
+			} catch {
+				span.textContent = "failed";
+				setTimeout(() => { span.textContent = defaultLabel; }, 2000);
+			}
+		});
+	</script>
+
+	<footer class="text-center px-4 sm:px-8 py-10 sm:py-12 border-t border-white/[0.04]">
+		<p class="text-xs text-zinc-800">
+			Built with
+			<a href="https://github.com/shikijs/shiki-magic-move" target="_blank" rel="noopener" class="text-zinc-600 no-underline border-b border-white/[0.06] transition-colors hover:text-zinc-500">
+				shiki-magic-move
+			</a>
+		</p>
+	</footer>
+</Base>

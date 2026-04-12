@@ -1,0 +1,43 @@
+{
+  "$schema": "https://biomejs.dev/schemas/2.4.11/schema.json",
+  "files": {
+    "includes": [
+      "**/*.ts",
+      "**/*.mjs",
+      "**/*.json",
+      "**/*.astro",
+      "**/*.css",
+      "!**/dist",
+      "!**/.astro",
+      "!**/.wrangler",
+      "!demo/src/pages"
+    ]
+  },
+  "css": {
+    "parser": {
+      "tailwindDirectives": true
+    }
+  },
+  "formatter": {
+    "indentStyle": "tab",
+    "lineWidth": 100
+  },
+  "linter": {
+    "rules": {
+      "recommended": true,
+      "correctness": {
+        "noUnusedImports": "off",
+        "noUnusedVariables": "off"
+      },
+      "suspicious": {
+        "noAssignInExpressions": "off"
+      }
+    }
+  },
+  "json": {
+    "formatter": {
+      "indentStyle": "space",
+      "indentWidth": 2
+    }
+  }
+}

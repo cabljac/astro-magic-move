@@ -1,0 +1,37 @@
+{
+  "name": "astro-magic-move",
+  "version": "0.1.1",
+  "description": "Animated code morphing for Astro, powered by Shiki Magic Move. Build-time tokenization, zero-framework client JS, CSS-variable theming.",
+  "type": "module",
+  "license": "MIT",
+  "author": "Jacob Cable",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cabljac/astro-magic-move"
+  },
+  "homepage": "https://astro-magic-move.dev",
+  "exports": {
+    ".": "./index.ts",
+    "./styles": "./styles/magic-move.css"
+  },
+  "files": [
+    "index.ts",
+    "src/",
+    "styles/",
+    "LICENSE"
+  ],
+  "keywords": [
+    "astro-component",
+    "withastro",
+    "shiki",
+    "code-animation",
+    "magic-move"
+  ],
+  "peerDependencies": {
+    "astro": "^5.0.0 || ^6.0.0"
+  },
+  "dependencies": {
+    "shiki": "^3.0.0",
+    "shiki-magic-move": "^1.3.0"
+  }
+}

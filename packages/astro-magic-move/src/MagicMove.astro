@@ -1,0 +1,182 @@
+---
+import { createHighlighter, type HighlighterGeneric } from "shiki";
+import { codeToKeyedTokens, createMagicMoveMachine } from "shiki-magic-move/core";
+import { cssVarTheme } from "./theme";
+import type { MagicMoveProps } from "./types";
+
+interface Props extends MagicMoveProps {}
+
+const {
+	before,
+	after,
+	steps: stepsProp,
+	lang = "typescript",
+	trigger = "scroll",
+	duration = 800,
+	stagger = 0.3,
+	threshold = 0.4,
+	lineNumbers = false,
+	class: className,
+} = Astro.props;
+
+// Resolve steps from props
+let steps: string[];
+if (stepsProp) {
+	if (stepsProp.length < 2) {
+		throw new Error("[astro-magic-move] `steps` must contain at least 2 items.");
+	}
+	steps = stepsProp;
+} else if (before != null && after != null) {
+	steps = [before, after];
+} else {
+	throw new Error("[astro-magic-move] Provide either `before` + `after` or `steps` (min 2 items).");
+}
+
+// Module-level highlighter cache (survives HMR via globalThis)
+const CACHE_KEY = "__astro_magic_move_hl";
+type HLCache = Map<string, HighlighterGeneric<string, string>>;
+const hlCache: HLCache = ((globalThis as Record<string, unknown>)[CACHE_KEY] ??=
+	new Map()) as HLCache;
+
+let highlighter = hlCache.get(lang);
+if (!highlighter) {
+	highlighter = await createHighlighter({
+		themes: [cssVarTheme],
+		langs: [lang],
+	});
+	hlCache.set(lang, highlighter);
+}
+
+// Build the magic move machine and compile all steps at build time
+const machine = createMagicMoveMachine(
+	(code) => codeToKeyedTokens(highlighter, code, { lang, theme: "css-variables" }, lineNumbers),
+	{},
+);
+
+const compiledSteps = steps.map((code) => machine.commit(code).current);
+
+const stepsJson = JSON.stringify(compiledSteps);
+---
+
+<magic-move
+	class:list={["magic-move", className]}
+	data-trigger={trigger}
+	data-duration={duration}
+	data-stagger={stagger}
+	data-threshold={threshold}
+	data-lang={lang}
+	{...(lineNumbers ? { "data-line-numbers": "" } : {})}
+>
+	<pre class="shiki-magic-move-container"><code>{steps[0]}</code></pre>
+	<script is:inline type="application/json" set:html={stepsJson} />
+</magic-move>
+
+<script>
+	import { MagicMoveRenderer } from "shiki-magic-move/renderer";
+
+	class MagicMoveElement extends HTMLElement {
+		private renderer: MagicMoveRenderer | null = null;
+		private steps: any[] = [];
+		private currentStep = 0;
+		private observer: IntersectionObserver | null = null;
+
+		connectedCallback() {
+			const dataScript = this.querySelector('script[type="application/json"]');
+			if (!dataScript?.textContent) return;
+			this.steps = JSON.parse(dataScript.textContent);
+			dataScript.remove();
+
+			const container = this.querySelector("pre");
+			if (!container) return;
+			container.innerHTML = "";
+
+			const duration = Number(this.dataset.duration ?? 800);
+			const stagger = Number(this.dataset.stagger ?? 0.3);
+			const threshold = Number(this.dataset.threshold ?? 0.4);
+			const trigger = this.dataset.trigger ?? "scroll";
+			const lineNumbers = this.hasAttribute("data-line-numbers");
+
+			this.renderer = new MagicMoveRenderer(container, {
+				duration,
+				stagger,
+				lineNumbers,
+				animateContainer: true,
+			});
+
+			// replace() for instant initial display (no animation, no empty frame)
+			this.renderer.replace(this.steps[0]);
+			this.currentStep = 0;
+			this.setupTrigger(trigger, threshold);
+		}
+
+		disconnectedCallback() {
+			this.observer?.disconnect();
+		}
+
+		private setupTrigger(trigger: string, threshold: number) {
+			switch (trigger) {
+				case "scroll":
+					this.setupScrollTrigger(threshold);
+					break;
+				case "click":
+					this.style.cursor = "pointer";
+					this.addEventListener("click", () => {
+						const next = (this.currentStep + 1) % this.steps.length;
+						this.animateToStep(next);
+					});
+					break;
+				case "auto":
+					requestAnimationFrame(() => {
+						this.animateToStep(1);
+					});
+					break;
+			}
+		}
+
+		private setupScrollTrigger(threshold: number) {
+			this.observer = new IntersectionObserver(
+				([entry]) => {
+					if (entry.isIntersecting) {
+						this.animateToStep(1);
+						this.observer?.disconnect();
+					}
+				},
+				{ threshold },
+			);
+			this.observer.observe(this);
+		}
+
+		private async animateToStep(stepIndex: number) {
+			if (!this.renderer || stepIndex === this.currentStep) return;
+			if (stepIndex < 0 || stepIndex >= this.steps.length) return;
+
+			await this.renderer.render(this.steps[stepIndex]);
+			this.currentStep = stepIndex;
+
+			this.dispatchEvent(
+				new CustomEvent("magic-move:step", {
+					detail: { step: stepIndex, total: this.steps.length },
+					bubbles: true,
+				}),
+			);
+		}
+	}
+
+	if (!customElements.get("magic-move")) {
+		customElements.define("magic-move", MagicMoveElement);
+	}
+</script>
+
+<style is:global>
+	magic-move {
+		display: block;
+		position: relative;
+	}
+
+	magic-move .shiki-magic-move-container {
+		margin: 0;
+		overflow-x: auto;
+		overflow-y: hidden;
+		scrollbar-width: thin;
+	}
+</style>

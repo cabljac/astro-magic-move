@@ -1,0 +1,38 @@
+@import "tailwindcss";
+
+@theme {
+	--font-sans: "Plus Jakarta Sans", system-ui, sans-serif;
+	--font-mono: "Geist Mono", ui-monospace, monospace;
+}
+
+:root {
+	--shiki-foreground: #c9d1d9;
+	--shiki-background: transparent;
+	--shiki-token-keyword: #d2a8ff;
+	--shiki-token-string: #a5d6ff;
+	--shiki-token-function: #79c0ff;
+	--shiki-token-comment: #484f58;
+	--shiki-token-parameter: #ffa657;
+	--shiki-token-constant: #ff7b72;
+	--shiki-token-string-expression: #a5d6ff;
+	--shiki-token-punctuation: #8b949e;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+	width: 6px;
+	height: 6px;
+}
+
+::-webkit-scrollbar-track {
+	background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+	background: rgba(255, 255, 255, 0.08);
+	border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+	background: rgba(255, 255, 255, 0.15);
+}
