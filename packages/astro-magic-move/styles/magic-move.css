@@ -21,4 +21,5 @@ magic-move {
 	background: var(--shiki-background, #1e1e1e);
 	color: var(--shiki-foreground, #d4d4d4);
 	scrollbar-width: thin;
+	min-height: calc(1.5rem + var(--min-lines, 0) * 1.7em);
 }

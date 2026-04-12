@@ -40,6 +40,12 @@ export interface MagicMoveProps {
 	lineNumbers?: boolean;
 
 	/**
+	 * Minimum height expressed as a number of lines.
+	 * Prevents layout shift when stepping between code blocks of different lengths.
+	 */
+	minLines?: number;
+
+	/**
 	 * CSS class(es) applied to the outer `<magic-move>` element.
 	 * Use this for all visual styling (bg, border, rounded, shadow, padding, width, etc).
 	 */
