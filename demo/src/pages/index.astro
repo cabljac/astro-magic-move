@@ -142,19 +142,25 @@ const triggerSteps = [
 
 // ── External control ─────────────────────────────────────
 const externalSteps = [
-`const x = 1`,
+`const el = document.querySelector('magic-move')`,
 
-`const x = 1
-const y = 2`,
+`const el = document.querySelector('magic-move')
 
-`const x = 1
-const y = 2
-const z = x + y`,
+el.step = 2`,
 
-`function add(a: number, b: number) {
-  return a + b
-}
-const z = add(1, 2)`,
+`const el = document.querySelector('magic-move')
+
+el.step = 2
+el.totalSteps // => 4`,
+
+`const el = document.querySelector('magic-move')
+
+el.step = 2
+el.totalSteps // => 4
+
+el.addEventListener('magic-move:step', (e) => {
+  console.log(e.detail.step, e.detail.total)
+})`,
 ];
 
 // ── CSS variables theming ────────────────────────────────
