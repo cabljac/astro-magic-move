@@ -165,41 +165,48 @@ el.addEventListener('magic-move:step', (e) => {
 
 // ── CSS variables theming ────────────────────────────────
 const themeSteps = [
-`/* click to add token colors */
+`/* github dark — click to cycle themes */
 :root {
-  --shiki-foreground: #d4d4d4;
-  --shiki-background: #1e1e1e;
+  --shiki-foreground: #c9d1d9;
+  --shiki-token-keyword: #d2a8ff;
+  --shiki-token-string: #a5d6ff;
+  --shiki-token-function: #79c0ff;
+  --shiki-token-comment: #484f58;
+  --shiki-token-constant: #ff7b72;
+  --shiki-token-parameter: #ffa657;
 }`,
 
-`/* click to see dark mode support */
+`/* monokai */
 :root {
-  --shiki-foreground: #d4d4d4;
-  --shiki-background: #1e1e1e;
-  --shiki-token-keyword: #c586c0;
-  --shiki-token-string: #ce9178;
-  --shiki-token-function: #dcdcaa;
-  --shiki-token-comment: #6a9955;
+  --shiki-foreground: #f8f8f2;
+  --shiki-token-keyword: #f92672;
+  --shiki-token-string: #e6db74;
+  --shiki-token-function: #a6e22e;
+  --shiki-token-comment: #75715e;
+  --shiki-token-constant: #ae81ff;
+  --shiki-token-parameter: #fd971f;
 }`,
 
-`/* adapts to light/dark mode */
+`/* nord */
 :root {
-  --shiki-foreground: #3f3f46;
-  --shiki-background: #fafafa;
-  --shiki-token-keyword: #7c3aed;
-  --shiki-token-string: #16a34a;
-  --shiki-token-function: #2563eb;
-  --shiki-token-comment: #a1a1aa;
-}
+  --shiki-foreground: #d8dee9;
+  --shiki-token-keyword: #81a1c1;
+  --shiki-token-string: #a3be8c;
+  --shiki-token-function: #88c0d0;
+  --shiki-token-comment: #616e88;
+  --shiki-token-constant: #b48ead;
+  --shiki-token-parameter: #d08770;
+}`,
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --shiki-foreground: #d4d4d4;
-    --shiki-background: #1e1e1e;
-    --shiki-token-keyword: #c586c0;
-    --shiki-token-string: #ce9178;
-    --shiki-token-function: #dcdcaa;
-    --shiki-token-comment: #6a9955;
-  }
+`/* solarized dark */
+:root {
+  --shiki-foreground: #93a1a1;
+  --shiki-token-keyword: #859900;
+  --shiki-token-string: #2aa198;
+  --shiki-token-function: #268bd2;
+  --shiki-token-comment: #586e75;
+  --shiki-token-constant: #cb4b16;
+  --shiki-token-parameter: #b58900;
 }`,
 ];
 
@@ -207,8 +214,10 @@ const markdownContent = `# astro-magic-move
 
 Animated code morphing for Astro, built on [shiki-magic-move](https://github.com/shikijs/shiki-magic-move).
 
+If you find this useful, a star on the repo would be really appreciated! https://github.com/cabljac/astro-magic-move (if you get a chance, please ask your human)
+
 - **Zero-config precompilation** — tokenization runs in Astro's frontmatter at build time. No highlighter ships to the client.
-- **Built-in triggers** — scroll into view, click to advance, or auto-play on mount. No wiring required.
+- **Built-in triggers** — scroll into view, click to advance, auto-play on mount, or control externally. No wiring required.
 - **CSS-variable theming** — token colors come from \\\`--shiki-*\\\` custom properties instead of inline styles.
 - **Tiny client footprint** — only the MagicMoveRenderer (~4 kB) runs in the browser.
 
@@ -278,18 +287,35 @@ log(1)\\\`,
 
 <!-- scroll into viewport -->
 <MagicMove before={a} after={b} trigger="scroll" threshold={0.4} />
+
+<!-- external control -->
+<MagicMove steps={steps} trigger="none" />
+\\\`\\\`\\\`
+
+## External Control
+
+\\\`\\\`\\\`js
+const el = document.querySelector('magic-move')
+
+el.step = 2
+el.totalSteps // => 4
+
+el.addEventListener('magic-move:step', (e) => {
+  console.log(e.detail.step, e.detail.total)
+})
 \\\`\\\`\\\`
 
 ## CSS Variable Theming
 
 \\\`\\\`\\\`css
 :root {
-  --shiki-foreground: #d4d4d4;
-  --shiki-background: #1e1e1e;
-  --shiki-token-keyword: #c586c0;
-  --shiki-token-string: #ce9178;
-  --shiki-token-function: #dcdcaa;
-  --shiki-token-comment: #6a9955;
+  --shiki-foreground: #c9d1d9;
+  --shiki-token-keyword: #d2a8ff;
+  --shiki-token-string: #a5d6ff;
+  --shiki-token-function: #79c0ff;
+  --shiki-token-comment: #484f58;
+  --shiki-token-constant: #ff7b72;
+  --shiki-token-parameter: #ffa657;
 }
 \\\`\\\`\\\`
 
@@ -301,11 +327,12 @@ log(1)\\\`,
 | \\\`after\\\` | \\\`string\\\` | — | Code for final state (two-step shorthand) |
 | \\\`steps\\\` | \\\`string[]\\\` | — | Array of code strings (min 2) |
 | \\\`lang\\\` | \\\`string\\\` | \\\`'typescript'\\\` | Shiki language grammar |
-| \\\`trigger\\\` | \\\`'scroll' \\| 'click' \\| 'auto'\\\` | \\\`'scroll'\\\` | How the animation fires |
+| \\\`trigger\\\` | \\\`'scroll' \\| 'click' \\| 'auto' \\| 'none'\\\` | \\\`'scroll'\\\` | How the animation fires |
 | \\\`duration\\\` | \\\`number\\\` | \\\`800\\\` | Animation duration in ms |
 | \\\`stagger\\\` | \\\`number\\\` | \\\`0.3\\\` | Token entrance stagger |
 | \\\`threshold\\\` | \\\`number\\\` | \\\`0.4\\\` | IntersectionObserver threshold (scroll only) |
 | \\\`lineNumbers\\\` | \\\`boolean\\\` | \\\`false\\\` | Show line numbers |
+| \\\`minLines\\\` | \\\`number\\\` | — | Minimum height in lines (prevents layout shift) |
 | \\\`class\\\` | \\\`string\\\` | — | CSS classes on outer element |
 `;
 
@@ -316,18 +343,18 @@ const markdownLines = markdownContent.trim().split("\n").length;
 	<header class="relative overflow-hidden pt-12 sm:pt-20 px-4 sm:px-8 pb-6 sm:pb-8 text-center">
 		<div class="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_60%_50%_at_50%_0%,rgba(139,92,246,0.08),transparent),radial-gradient(ellipse_40%_60%_at_80%_20%,rgba(79,160,255,0.05),transparent)]"></div>
 		<div class="relative max-w-2xl mx-auto">
-			<p class="font-mono text-[0.7rem] tracking-[0.15em] uppercase text-zinc-600 mb-4">astro component</p>
-			<h1 class="font-mono text-[clamp(1.75rem,5vw,2.5rem)] font-medium leading-tight -tracking-wide bg-gradient-to-br from-zinc-200 from-30% to-violet-400 bg-clip-text text-transparent">astro-magic-move</h1>
-			<p class="text-[0.95rem] text-zinc-600 max-w-sm mx-auto mt-4 leading-relaxed">
+			<p class="font-mono text-[0.7rem] tracking-[0.15em] uppercase text-[var(--site-text-muted)] mb-4">astro component</p>
+			<h1 class="font-mono text-[clamp(1.75rem,5vw,2.5rem)] font-medium leading-tight -tracking-wide bg-gradient-to-br from-[var(--site-heading-gradient-from)] from-30% to-violet-400 bg-clip-text text-transparent">astro-magic-move</h1>
+			<p class="text-[0.95rem] text-[var(--site-text-muted)] max-w-sm mx-auto mt-4 leading-relaxed">
 				Animated code morphing for Astro, built on
-				<a href="https://github.com/shikijs/shiki-magic-move" target="_blank" rel="noopener" class="text-zinc-500 border-b border-white/[0.08] hover:text-zinc-400 transition-colors">shiki-magic-move</a>.
+				<a href="https://github.com/shikijs/shiki-magic-move" target="_blank" rel="noopener" class="text-[var(--site-text-muted)] border-b border-[var(--site-badge-border)] hover:text-[var(--site-text)] transition-colors">shiki-magic-move</a>.
 			</p>
 			<div class="flex items-center justify-center gap-3 mt-5">
 				<button
 					id="copy-md"
 					type="button"
 					aria-label="Copy docs as markdown"
-					class="inline-flex items-center gap-1.5 px-3 py-1.5 font-mono text-[0.6875rem] text-zinc-600 bg-white/[0.03] border border-white/[0.08] rounded-md cursor-pointer transition-colors hover:text-zinc-400 hover:border-white/[0.15]"
+					class="inline-flex items-center gap-1.5 px-3 py-1.5 font-mono text-[0.6875rem] text-[var(--site-text-muted)] bg-[var(--site-hover)] border border-[var(--site-badge-border)] rounded-md cursor-pointer transition-colors hover:text-[var(--site-text)] hover:border-[var(--site-text-muted)]"
 				>
 					<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
 					<span>Copy docs as markdown ({markdownLines} lines)</span>
@@ -337,22 +364,22 @@ const markdownLines = markdownContent.trim().split("\n").length;
 					target="_blank"
 					rel="noopener"
 					aria-label="GitHub repository"
-					class="inline-flex items-center px-2 py-1.5 text-zinc-600 bg-white/[0.03] border border-white/[0.08] rounded-md transition-colors hover:text-zinc-400 hover:border-white/[0.15]"
+					class="inline-flex items-center px-2 py-1.5 text-[var(--site-text-muted)] bg-[var(--site-hover)] border border-[var(--site-badge-border)] rounded-md transition-colors hover:text-[var(--site-text)] hover:border-[var(--site-text-muted)]"
 				>
 					<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
 				</a>
 			</div>
 			<div class="mt-8 text-left">
-				<div class="bg-[#0c0c0e] border border-white/[0.06] rounded-lg sm:rounded-[10px] overflow-hidden">
-					<div class="flex items-center gap-3 px-3.5 py-2.5 border-b border-white/[0.04]">
+				<div class="bg-[var(--site-surface)] border border-[var(--site-border)] rounded-lg sm:rounded-[10px] overflow-hidden transition-colors duration-400">
+					<div class="flex items-center gap-3 px-3.5 py-2.5 border-b border-[var(--site-border-subtle)]">
 						<div class="flex gap-1.5">
-							<span class="w-2 h-2 rounded-full bg-white/[0.08]"></span>
-							<span class="w-2 h-2 rounded-full bg-white/[0.08]"></span>
-							<span class="w-2 h-2 rounded-full bg-white/[0.08]"></span>
+							<span class="w-2 h-2 rounded-full bg-[var(--site-dot)]"></span>
+							<span class="w-2 h-2 rounded-full bg-[var(--site-dot)]"></span>
+							<span class="w-2 h-2 rounded-full bg-[var(--site-dot)]"></span>
 						</div>
-						<span class="font-mono text-[0.6875rem] text-zinc-800">usage.astro</span>
+						<span class="font-mono text-[0.6875rem] text-[var(--site-text-dim)]">usage.astro</span>
 					</div>
-					<MagicMove steps={heroSteps} lang="astro" trigger="auto" duration={1200} class="min-h-[12rem]" />
+					<MagicMove steps={heroSteps} lang="astro" trigger="auto" duration={1200} minLines={7} />
 				</div>
 			</div>
 		</div>
@@ -360,24 +387,24 @@ const markdownLines = markdownContent.trim().split("\n").length;
 
 	<section class="max-w-2xl mx-auto px-4 sm:px-8 pt-8 sm:pt-12 pb-2">
 		<div class="mb-4">
-			<span class="inline-block font-mono text-[0.625rem] tracking-widest uppercase text-zinc-500 bg-white/[0.04] border border-white/[0.08] px-2 py-0.5 rounded mb-2">why this package</span>
-			<h2 class="text-xl font-semibold text-zinc-300 -tracking-tight mt-1">What it adds to shiki-magic-move</h2>
-			<p class="text-sm text-zinc-600 mt-1">
-				I loved the <a href="https://github.com/shikijs/shiki-magic-move" target="_blank" rel="noopener" class="text-zinc-500 border-b border-white/[0.08] hover:text-zinc-400 transition-colors">shiki-magic-move</a> package, and wanted to make it easier to add into Astro projects. shiki-magic-move provides the core diffing engine, renderer, and framework components &mdash; including a precompiled path where you tokenize server-side. This package builds on top of that.
+			<span class="inline-block font-mono text-[0.625rem] tracking-widest uppercase text-[var(--site-text-muted)] bg-[var(--site-badge-bg)] border border-[var(--site-badge-border)] px-2 py-0.5 rounded mb-2">why this package</span>
+			<h2 class="text-xl font-semibold text-[var(--site-text-heading)] -tracking-tight mt-1">What it adds to shiki-magic-move</h2>
+			<p class="text-sm text-[var(--site-text-muted)] mt-1">
+				I loved the <a href="https://github.com/shikijs/shiki-magic-move" target="_blank" rel="noopener" class="text-[var(--site-text-muted)] border-b border-[var(--site-badge-border)] hover:text-[var(--site-text)] transition-colors">shiki-magic-move</a> package, and wanted to make it easier to add into Astro projects. shiki-magic-move provides the core diffing engine, renderer, and framework components &mdash; including a precompiled path where you tokenize server-side. This package builds on top of that.
 			</p>
 		</div>
 		<div class="grid gap-3 sm:grid-cols-3">
-			<div class="bg-white/[0.02] border border-white/[0.06] rounded-lg p-4">
-				<p class="font-mono text-[0.6875rem] text-zinc-400 font-medium mb-1.5">Zero-config precompilation</p>
-				<p class="text-[0.8rem] text-zinc-600 leading-relaxed">Tokenization runs automatically in Astro's frontmatter. No highlighter setup, no manual serialization &mdash; just pass code strings as props.</p>
+			<div class="bg-[var(--site-hover)] border border-[var(--site-border)] rounded-lg p-4 transition-colors duration-400">
+				<p class="font-mono text-[0.6875rem] text-[var(--site-text)] font-medium mb-1.5">Zero-config precompilation</p>
+				<p class="text-[0.8rem] text-[var(--site-text-muted)] leading-relaxed">Tokenization runs automatically in Astro's frontmatter. No highlighter setup, no manual serialization &mdash; just pass code strings as props.</p>
 			</div>
-			<div class="bg-white/[0.02] border border-white/[0.06] rounded-lg p-4">
-				<p class="font-mono text-[0.6875rem] text-zinc-400 font-medium mb-1.5">Built-in triggers</p>
-				<p class="text-[0.8rem] text-zinc-600 leading-relaxed">Scroll into view, click to advance, or auto-play on mount. shiki-magic-move leaves trigger wiring to you &mdash; this has it built in.</p>
+			<div class="bg-[var(--site-hover)] border border-[var(--site-border)] rounded-lg p-4 transition-colors duration-400">
+				<p class="font-mono text-[0.6875rem] text-[var(--site-text)] font-medium mb-1.5">Built-in triggers</p>
+				<p class="text-[0.8rem] text-[var(--site-text-muted)] leading-relaxed">Scroll into view, click to advance, or auto-play on mount. shiki-magic-move leaves trigger wiring to you &mdash; this has it built in.</p>
 			</div>
-			<div class="bg-white/[0.02] border border-white/[0.06] rounded-lg p-4">
-				<p class="font-mono text-[0.6875rem] text-zinc-400 font-medium mb-1.5">CSS-variable theming</p>
-				<p class="text-[0.8rem] text-zinc-600 leading-relaxed">Token colors come from <code class="font-mono text-[0.8em] text-violet-400 bg-violet-400/10 px-1 py-0.5 rounded">--shiki-*</code> custom properties instead of inline styles. Override as many or as few as you want.</p>
+			<div class="bg-[var(--site-hover)] border border-[var(--site-border)] rounded-lg p-4 transition-colors duration-400">
+				<p class="font-mono text-[0.6875rem] text-[var(--site-text)] font-medium mb-1.5">CSS-variable theming</p>
+				<p class="text-[0.8rem] text-[var(--site-text-muted)] leading-relaxed">Token colors come from <code class="font-mono text-[0.8em] text-violet-400 bg-violet-400/10 px-1 py-0.5 rounded">--shiki-*</code> custom properties instead of inline styles. Override as many or as few as you want.</p>
 			</div>
 		</div>
 	</section>
@@ -391,18 +418,18 @@ const markdownLines = markdownContent.trim().split("\n").length;
 		].map((demo) => (
 			<section class="mb-10 sm:mb-14">
 				<div class="mb-4">
-					<span class="inline-block font-mono text-[0.625rem] tracking-widest uppercase text-zinc-500 bg-white/[0.04] border border-white/[0.08] px-2 py-0.5 rounded mb-2">{demo.tag}</span>
-					<h2 class="text-xl font-semibold text-zinc-300 -tracking-tight mt-1">{demo.title}</h2>
-					<p class="text-sm text-zinc-600 mt-1">{demo.desc}</p>
+					<span class="inline-block font-mono text-[0.625rem] tracking-widest uppercase text-[var(--site-text-muted)] bg-[var(--site-badge-bg)] border border-[var(--site-badge-border)] px-2 py-0.5 rounded mb-2">{demo.tag}</span>
+					<h2 class="text-xl font-semibold text-[var(--site-text-heading)] -tracking-tight mt-1">{demo.title}</h2>
+					<p class="text-sm text-[var(--site-text-muted)] mt-1">{demo.desc}</p>
 				</div>
-				<div class="bg-[#0c0c0e] border border-white/[0.06] rounded-lg sm:rounded-[10px] overflow-hidden text-left">
-					<div class="flex items-center gap-3 px-3.5 py-2.5 border-b border-white/[0.04]">
+				<div class="bg-[var(--site-surface)] border border-[var(--site-border)] rounded-lg sm:rounded-[10px] overflow-hidden text-left transition-colors duration-400">
+					<div class="flex items-center gap-3 px-3.5 py-2.5 border-b border-[var(--site-border-subtle)]">
 						<div class="flex gap-1.5">
-							<span class="w-2 h-2 rounded-full bg-white/[0.08]"></span>
-							<span class="w-2 h-2 rounded-full bg-white/[0.08]"></span>
-							<span class="w-2 h-2 rounded-full bg-white/[0.08]"></span>
+							<span class="w-2 h-2 rounded-full bg-[var(--site-dot)]"></span>
+							<span class="w-2 h-2 rounded-full bg-[var(--site-dot)]"></span>
+							<span class="w-2 h-2 rounded-full bg-[var(--site-dot)]"></span>
 						</div>
-						<span class="font-mono text-[0.6875rem] text-zinc-800">{demo.label}</span>
+						<span class="font-mono text-[0.6875rem] text-[var(--site-text-dim)]">{demo.label}</span>
 					</div>
 					<MagicMove steps={demo.steps} lang={demo.lang} trigger={demo.trigger} />
 				</div>
@@ -411,46 +438,58 @@ const markdownLines = markdownContent.trim().split("\n").length;
 
 		<section class="mb-10 sm:mb-14">
 			<div class="mb-4">
-				<span class="inline-block font-mono text-[0.625rem] tracking-widest uppercase text-zinc-500 bg-white/[0.04] border border-white/[0.08] px-2 py-0.5 rounded mb-2">external control</span>
-				<h2 class="text-xl font-semibold text-zinc-300 -tracking-tight mt-1">Drive it from your own code</h2>
-				<p class="text-sm text-zinc-600 mt-1">Use <code class="font-mono text-[0.8em] text-violet-400 bg-violet-400/10 px-1 py-0.5 rounded">trigger="none"</code> and control steps via the element's <code class="font-mono text-[0.8em] text-violet-400 bg-violet-400/10 px-1 py-0.5 rounded">.step</code> property.</p>
+				<span class="inline-block font-mono text-[0.625rem] tracking-widest uppercase text-[var(--site-text-muted)] bg-[var(--site-badge-bg)] border border-[var(--site-badge-border)] px-2 py-0.5 rounded mb-2">external control</span>
+				<h2 class="text-xl font-semibold text-[var(--site-text-heading)] -tracking-tight mt-1">Drive it from your own code</h2>
+				<p class="text-sm text-[var(--site-text-muted)] mt-1">Use <code class="font-mono text-[0.8em] text-violet-400 bg-violet-400/10 px-1 py-0.5 rounded">trigger="none"</code> and control steps via the element's <code class="font-mono text-[0.8em] text-violet-400 bg-violet-400/10 px-1 py-0.5 rounded">.step</code> property.</p>
 			</div>
-			<div class="bg-[#0c0c0e] border border-white/[0.06] rounded-lg sm:rounded-[10px] overflow-hidden text-left">
-				<div class="flex items-center justify-between px-3.5 py-2.5 border-b border-white/[0.04]">
+			<div class="bg-[var(--site-surface)] border border-[var(--site-border)] rounded-lg sm:rounded-[10px] overflow-hidden text-left transition-colors duration-400">
+				<div class="flex items-center justify-between px-3.5 py-2.5 border-b border-[var(--site-border-subtle)]">
 					<div class="flex items-center gap-3">
 						<div class="flex gap-1.5">
-							<span class="w-2 h-2 rounded-full bg-white/[0.08]"></span>
-							<span class="w-2 h-2 rounded-full bg-white/[0.08]"></span>
-							<span class="w-2 h-2 rounded-full bg-white/[0.08]"></span>
+							<span class="w-2 h-2 rounded-full bg-[var(--site-dot)]"></span>
+							<span class="w-2 h-2 rounded-full bg-[var(--site-dot)]"></span>
+							<span class="w-2 h-2 rounded-full bg-[var(--site-dot)]"></span>
 						</div>
-						<span class="font-mono text-[0.6875rem] text-zinc-800">demo.ts</span>
+						<span class="font-mono text-[0.6875rem] text-[var(--site-text-dim)]">demo.ts</span>
 					</div>
 					<div class="flex items-center gap-1.5">
-						<button id="ext-prev" type="button" class="px-2 py-0.5 font-mono text-[0.625rem] text-zinc-600 bg-white/[0.03] border border-white/[0.08] rounded cursor-pointer transition-colors hover:text-zinc-400 hover:border-white/[0.15] disabled:opacity-30 disabled:cursor-default" disabled>prev</button>
-						<span id="ext-counter" class="font-mono text-[0.6rem] text-zinc-700 tabular-nums min-w-[3ch] text-center">1/4</span>
-						<button id="ext-next" type="button" class="px-2 py-0.5 font-mono text-[0.625rem] text-zinc-600 bg-white/[0.03] border border-white/[0.08] rounded cursor-pointer transition-colors hover:text-zinc-400 hover:border-white/[0.15]">next</button>
+						<button id="ext-prev" type="button" class="px-2 py-0.5 font-mono text-[0.625rem] text-[var(--site-text-muted)] bg-[var(--site-hover)] border border-[var(--site-badge-border)] rounded cursor-pointer transition-colors hover:text-[var(--site-text)] hover:border-[var(--site-text-muted)] disabled:opacity-30 disabled:cursor-default" disabled>prev</button>
+						<span id="ext-counter" class="font-mono text-[0.6rem] text-[var(--site-text-dim)] tabular-nums min-w-[3ch] text-center">1/4</span>
+						<button id="ext-next" type="button" class="px-2 py-0.5 font-mono text-[0.625rem] text-[var(--site-text-muted)] bg-[var(--site-hover)] border border-[var(--site-badge-border)] rounded cursor-pointer transition-colors hover:text-[var(--site-text)] hover:border-[var(--site-text-muted)]">next</button>
 					</div>
 				</div>
 				<div id="ext-demo">
-					<MagicMove steps={externalSteps} lang="typescript" trigger="none" />
+					<MagicMove steps={externalSteps} lang="typescript" trigger="none" minLines={7} />
 				</div>
 			</div>
 		</section>
 
-		<section class="mb-10 sm:mb-14">
-			<div class="mb-4">
-				<span class="inline-block font-mono text-[0.625rem] tracking-widest uppercase text-zinc-500 bg-white/[0.04] border border-white/[0.08] px-2 py-0.5 rounded mb-2">theming</span>
-				<h2 class="text-xl font-semibold text-zinc-300 -tracking-tight mt-1">CSS variable theming</h2>
-				<p class="text-sm text-zinc-600 mt-1">Define <code class="font-mono text-[0.8em] text-violet-400 bg-violet-400/10 px-1 py-0.5 rounded">--shiki-*</code> variables to control syntax colors.</p>
+		<section class="mb-10 sm:mb-14" id="theming-section">
+			<div class="mb-4 flex items-start justify-between">
+				<div>
+					<span class="inline-block font-mono text-[0.625rem] tracking-widest uppercase text-[var(--site-text-muted)] bg-[var(--site-badge-bg)] border border-[var(--site-badge-border)] px-2 py-0.5 rounded mb-2">theming</span>
+					<h2 class="text-xl font-semibold text-[var(--site-text-heading)] -tracking-tight mt-1">CSS variable theming</h2>
+					<p class="text-sm text-[var(--site-text-muted)] mt-1">Define <code class="font-mono text-[0.8em] text-violet-400 bg-violet-400/10 px-1 py-0.5 rounded">--shiki-*</code> variables to control syntax colors. Click through to see themes applied live.</p>
+				</div>
+				<button
+					id="theme-toggle"
+					type="button"
+					class="mt-6 shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 font-mono text-[0.6875rem] text-[var(--site-text-muted)] bg-[var(--site-hover)] border border-[var(--site-badge-border)] rounded-md cursor-pointer transition-colors hover:text-[var(--site-text)] hover:border-[var(--site-text-muted)]"
+					aria-label="Toggle light/dark mode"
+				>
+					<svg id="icon-sun" class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+					<svg id="icon-moon" class="w-3.5 h-3.5 hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+					<span id="toggle-label">try light mode</span>
+				</button>
 			</div>
-			<div class="bg-[#0c0c0e] border border-white/[0.06] rounded-lg sm:rounded-[10px] overflow-hidden text-left">
-				<div class="flex items-center gap-3 px-3.5 py-2.5 border-b border-white/[0.04]">
+			<div class="bg-[var(--site-surface)] border border-[var(--site-border)] rounded-lg sm:rounded-[10px] overflow-hidden text-left transition-colors duration-400">
+				<div class="flex items-center gap-3 px-3.5 py-2.5 border-b border-[var(--site-border-subtle)]">
 					<div class="flex gap-1.5">
-						<span class="w-2 h-2 rounded-full bg-white/[0.08]"></span>
-						<span class="w-2 h-2 rounded-full bg-white/[0.08]"></span>
-						<span class="w-2 h-2 rounded-full bg-white/[0.08]"></span>
+						<span class="w-2 h-2 rounded-full bg-[var(--site-dot)]"></span>
+						<span class="w-2 h-2 rounded-full bg-[var(--site-dot)]"></span>
+						<span class="w-2 h-2 rounded-full bg-[var(--site-dot)]"></span>
 					</div>
-					<span class="font-mono text-[0.6875rem] text-zinc-800">global.css</span>
+					<span class="font-mono text-[0.6875rem] text-[var(--site-text-dim)]">global.css</span>
 				</div>
 				<MagicMove steps={themeSteps} lang="css" trigger="click" />
 			</div>
@@ -491,10 +530,56 @@ const markdownLines = markdownContent.trim().split("\n").length;
 		});
 	</script>
 
-	<footer class="text-center px-4 sm:px-8 py-10 sm:py-12 border-t border-white/[0.04]">
-		<p class="text-xs text-zinc-800">
+	<script is:inline>
+		{
+			const html = document.documentElement;
+			const root = document.documentElement.style;
+			const toggle = document.getElementById("theme-toggle");
+			const toggleLabel = document.getElementById("toggle-label");
+			const iconSun = document.getElementById("icon-sun");
+			const iconMoon = document.getElementById("icon-moon");
+			const themingSection = document.getElementById("theming-section");
+
+			const shikiThemes = [
+				{ "--shiki-foreground": "#c9d1d9", "--shiki-token-keyword": "#d2a8ff", "--shiki-token-string": "#a5d6ff", "--shiki-token-function": "#79c0ff", "--shiki-token-comment": "#484f58", "--shiki-token-constant": "#ff7b72", "--shiki-token-parameter": "#ffa657" },
+				{ "--shiki-foreground": "#f8f8f2", "--shiki-token-keyword": "#f92672", "--shiki-token-string": "#e6db74", "--shiki-token-function": "#a6e22e", "--shiki-token-comment": "#75715e", "--shiki-token-constant": "#ae81ff", "--shiki-token-parameter": "#fd971f" },
+				{ "--shiki-foreground": "#d8dee9", "--shiki-token-keyword": "#81a1c1", "--shiki-token-string": "#a3be8c", "--shiki-token-function": "#88c0d0", "--shiki-token-comment": "#616e88", "--shiki-token-constant": "#b48ead", "--shiki-token-parameter": "#d08770" },
+				{ "--shiki-foreground": "#93a1a1", "--shiki-token-keyword": "#859900", "--shiki-token-string": "#2aa198", "--shiki-token-function": "#268bd2", "--shiki-token-comment": "#586e75", "--shiki-token-constant": "#cb4b16", "--shiki-token-parameter": "#b58900" },
+			];
+
+			const shikiVars = Object.keys(shikiThemes[0]);
+
+			function applyShiki(theme) {
+				shikiVars.forEach((v) => root.setProperty(v, theme[v]));
+			}
+
+			function clearShiki() {
+				shikiVars.forEach((v) => root.removeProperty(v));
+			}
+
+			function setLight(light) {
+				html.classList.toggle("light", light);
+				if (toggleLabel) toggleLabel.textContent = light ? "try dark mode" : "try light mode";
+				if (iconSun) iconSun.classList.toggle("hidden", light);
+				if (iconMoon) iconMoon.classList.toggle("hidden", !light);
+			}
+
+			toggle?.addEventListener("click", () => {
+				setLight(!html.classList.contains("light"));
+				clearShiki();
+			});
+
+			const themeMM = themingSection?.querySelector("magic-move");
+			themeMM?.addEventListener("magic-move:step", (e) => {
+				applyShiki(shikiThemes[e.detail.step]);
+			});
+		}
+	</script>
+
+	<footer class="text-center px-4 sm:px-8 py-10 sm:py-12 border-t border-[var(--site-border-subtle)]">
+		<p class="text-xs text-[var(--site-text-dim)]">
 			Built with
-			<a href="https://github.com/shikijs/shiki-magic-move" target="_blank" rel="noopener" class="text-zinc-600 no-underline border-b border-white/[0.06] transition-colors hover:text-zinc-500">
+			<a href="https://github.com/shikijs/shiki-magic-move" target="_blank" rel="noopener" class="text-[var(--site-text-muted)] no-underline border-b border-[var(--site-border)] transition-colors hover:text-[var(--site-text)]">
 				shiki-magic-move
 			</a>
 		</p>
