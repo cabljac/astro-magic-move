@@ -1,6 +1,6 @@
 {
   "name": "astro-magic-move",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Animated code morphing for Astro, powered by Shiki Magic Move. Build-time tokenization, zero-framework client JS, CSS-variable theming.",
   "type": "module",
   "license": "MIT",

@@ -2,11 +2,29 @@
 
 Animated code morphing for Astro, powered by [Shiki Magic Move](https://github.com/shikijs/shiki-magic-move).
 
-- **Build-time tokenization** — all Shiki highlighting runs in Astro's frontmatter. Zero Shiki JS ships to the client.
-- **Vanilla custom element** — the animation is powered by `MagicMoveRenderer` (~4kb), no framework islands needed.
-- **CSS-variable theming** — token colors come from `--shiki-*` custom properties. Works with Tailwind, daisyUI, plain CSS, whatever.
+- **Zero-config precompilation** — tokenization runs in Astro's frontmatter at build time. No highlighter ships to the client.
+- **Built-in triggers** — scroll into view, click to advance, or auto-play on mount. No wiring required.
+- **CSS-variable theming** — token colors come from `--shiki-*` custom properties instead of inline styles. Works with Tailwind, daisyUI, plain CSS, whatever.
+- **Tiny client footprint** — only the `MagicMoveRenderer` (~4 kB) runs in the browser.
 
 [Demo & docs](https://astro-magic-move.dev)
+
+## How is this different from shiki-magic-move?
+
+I loved the [shiki-magic-move](https://github.com/shikijs/shiki-magic-move) package, and wanted to make it easier to add into Astro projects.
+
+shiki-magic-move provides the core diffing engine, renderer, and framework components (React, Vue, Svelte, Solid, web components) that power the animation. It also supports a precompiled path where you tokenize at build time and ship only the renderer to the client.
+
+**astro-magic-move** builds on top of that. Instead of manually creating a highlighter, running `createMagicMoveMachine`, serializing tokens, and writing a client-side consumer, you pass code strings as props and the component handles everything:
+
+```astro
+<MagicMove before={a} after={b} trigger="scroll" />
+```
+
+On top of the DX simplification, it adds two features not present in shiki-magic-move:
+
+- **Trigger modes** (`scroll`, `click`, `auto`) — shiki-magic-move leaves it to you to decide when transitions fire. This component has them built in.
+- **CSS-variable theming by default** — shiki-magic-move applies token colors as inline styles. This component uses Shiki's `css-variables` theme so you can control all syntax colors with `--shiki-*` custom properties.
 
 ## Install
 

@@ -103,9 +103,12 @@ const stepsJson = JSON.stringify(compiledSteps);
 				animateContainer: true,
 			});
 
-			// replace() for instant initial display (no animation, no empty frame)
-			this.renderer.replace(this.steps[0]);
-			this.currentStep = 0;
+			if (trigger === "auto") {
+				this.currentStep = -1;
+			} else {
+				this.renderer.replace(this.steps[0]);
+				this.currentStep = 0;
+			}
 			this.setupTrigger(trigger, threshold);
 		}
 
@@ -126,9 +129,7 @@ const stepsJson = JSON.stringify(compiledSteps);
 					});
 					break;
 				case "auto":
-					requestAnimationFrame(() => {
-						this.animateToStep(1);
-					});
+					requestAnimationFrame(() => this.autoPlay());
 					break;
 			}
 		}
@@ -146,7 +147,17 @@ const stepsJson = JSON.stringify(compiledSteps);
 			this.observer.observe(this);
 		}
 
-		private async animateToStep(stepIndex: number) {
+		private async autoPlay() {
+				const duration = Number(this.dataset.duration ?? 800);
+				for (let i = 0; i < this.steps.length; i++) {
+					await this.animateToStep(i);
+					if (i < this.steps.length - 1) {
+						await new Promise((r) => setTimeout(r, duration + 200));
+					}
+				}
+			}
+
+			private async animateToStep(stepIndex: number) {
 			if (!this.renderer || stepIndex === this.currentStep) return;
 			if (stepIndex < 0 || stepIndex >= this.steps.length) return;
 
