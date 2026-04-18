@@ -77,31 +77,53 @@ const stepsJson = JSON.stringify(compiledSteps);
 	import { MagicMoveRenderer } from "shiki-magic-move/renderer";
 
 	class MagicMoveElement extends HTMLElement {
-		private renderer: MagicMoveRenderer | null = null;
-		private _steps: any[] = [];
-		private _currentStep = 0;
-		private _animating = false;
-		private _pendingStep: number | null = null;
-		private observer: IntersectionObserver | null = null;
+		#renderer: MagicMoveRenderer | null = null;
+		#steps: any[] = [];
+		#currentStep = 0;
+		#animating = false;
+		#pendingStep: number | null = null;
+		#observer: IntersectionObserver | null = null;
+		#ready = false;
 
 		get step(): number {
-			return this._currentStep;
+			return this.#currentStep;
 		}
 
 		set step(value: number) {
 			const idx = Number(value);
 			if (Number.isNaN(idx)) return;
-			this.animateToStep(idx);
+			if (!this.#ready) {
+				this.#pendingStep = idx;
+				return;
+			}
+			this.#animateToStep(idx);
 		}
 
 		get totalSteps(): number {
-			return this._steps.length;
+			return this.#steps.length;
+		}
+
+		get isReady(): boolean {
+			return this.#ready;
 		}
 
 		connectedCallback() {
+			const trigger = this.dataset.trigger ?? "scroll";
+			const threshold = Number(this.dataset.threshold ?? 0.4);
+
+			if (this.#ready) {
+				// Defensive re-entry: if the element is moved out of and back into the
+				// DOM, click listeners persist on the element and auto-play is one-shot,
+				// but the scroll observer was torn down in disconnectedCallback.
+				if (trigger === "scroll" && this.#currentStep === 0 && !this.#observer) {
+					this.#setupScrollTrigger(threshold);
+				}
+				return;
+			}
+
 			const dataScript = this.querySelector('script[type="application/json"]');
 			if (!dataScript?.textContent) return;
-			this._steps = JSON.parse(dataScript.textContent);
+			this.#steps = JSON.parse(dataScript.textContent);
 			dataScript.remove();
 
 			const container = this.querySelector("pre");
@@ -110,11 +132,9 @@ const stepsJson = JSON.stringify(compiledSteps);
 
 			const duration = Number(this.dataset.duration ?? 800);
 			const stagger = Number(this.dataset.stagger ?? 0.3);
-			const threshold = Number(this.dataset.threshold ?? 0.4);
-			const trigger = this.dataset.trigger ?? "scroll";
 			const lineNumbers = this.hasAttribute("data-line-numbers");
 
-			this.renderer = new MagicMoveRenderer(container, {
+			this.#renderer = new MagicMoveRenderer(container, {
 				duration,
 				stagger,
 				lineNumbers,
@@ -122,88 +142,99 @@ const stepsJson = JSON.stringify(compiledSteps);
 			});
 
 			if (trigger === "auto") {
-				this._currentStep = -1;
+				this.#currentStep = -1;
 			} else {
-				this.renderer.replace(this._steps[0]);
-				this._currentStep = 0;
+				this.#renderer.replace(this.#steps[0]);
+				this.#currentStep = 0;
 			}
-			this.setupTrigger(trigger, threshold);
+			this.#setupTrigger(trigger, threshold);
+
+			this.#ready = true;
+			this.dispatchEvent(new CustomEvent("magic-move:ready", { bubbles: true }));
+
+			if (this.#pendingStep !== null) {
+				const queued = this.#pendingStep;
+				this.#pendingStep = null;
+				this.#animateToStep(queued);
+			}
 		}
 
 		disconnectedCallback() {
-			this.observer?.disconnect();
+			this.#observer?.disconnect();
+			this.#observer = null;
 		}
 
-		private setupTrigger(trigger: string, threshold: number) {
+		#setupTrigger(trigger: string, threshold: number) {
 			switch (trigger) {
 				case "scroll":
-					this.setupScrollTrigger(threshold);
+					this.#setupScrollTrigger(threshold);
 					break;
 				case "click":
 					this.style.cursor = "pointer";
 					this.addEventListener("click", () => {
-						const next = (this._currentStep + 1) % this._steps.length;
-						this.animateToStep(next);
+						const next = (this.#currentStep + 1) % this.#steps.length;
+						this.#animateToStep(next);
 					});
 					break;
 				case "auto":
-					requestAnimationFrame(() => this.autoPlay());
+					requestAnimationFrame(() => this.#autoPlay());
 					break;
 				case "none":
 					break;
 			}
 		}
 
-		private setupScrollTrigger(threshold: number) {
-			this.observer = new IntersectionObserver(
+		#setupScrollTrigger(threshold: number) {
+			this.#observer = new IntersectionObserver(
 				([entry]) => {
 					if (entry.isIntersecting) {
-						this.animateToStep(1);
-						this.observer?.disconnect();
+						this.#animateToStep(1);
+						this.#observer?.disconnect();
+						this.#observer = null;
 					}
 				},
 				{ threshold },
 			);
-			this.observer.observe(this);
+			this.#observer.observe(this);
 		}
 
-		private async autoPlay() {
+		async #autoPlay() {
 			const duration = Number(this.dataset.duration ?? 800);
-			for (let i = 0; i < this._steps.length; i++) {
-				await this.animateToStep(i);
-				if (i < this._steps.length - 1) {
+			for (let i = 0; i < this.#steps.length; i++) {
+				await this.#animateToStep(i);
+				if (i < this.#steps.length - 1) {
 					await new Promise((r) => setTimeout(r, duration + 200));
 				}
 			}
 		}
 
-		private async animateToStep(stepIndex: number) {
-			if (!this.renderer || stepIndex === this._currentStep) return;
-			if (stepIndex < 0 || stepIndex >= this._steps.length) return;
+		async #animateToStep(stepIndex: number) {
+			if (!this.#renderer || stepIndex === this.#currentStep) return;
+			if (stepIndex < 0 || stepIndex >= this.#steps.length) return;
 
-			if (this._animating) {
-				this._pendingStep = stepIndex;
+			if (this.#animating) {
+				this.#pendingStep = stepIndex;
 				return;
 			}
 
-			this._animating = true;
+			this.#animating = true;
 			try {
-				await this.renderer.render(this._steps[stepIndex]);
-				this._currentStep = stepIndex;
+				await this.#renderer.render(this.#steps[stepIndex]);
+				this.#currentStep = stepIndex;
 				this.dispatchEvent(
 					new CustomEvent("magic-move:step", {
-						detail: { step: stepIndex, total: this._steps.length },
+						detail: { step: stepIndex, total: this.#steps.length },
 						bubbles: true,
 					}),
 				);
 			} finally {
-				this._animating = false;
+				this.#animating = false;
 			}
 
-			if (this._pendingStep !== null) {
-				const next = this._pendingStep;
-				this._pendingStep = null;
-				this.animateToStep(next);
+			if (this.#pendingStep !== null) {
+				const next = this.#pendingStep;
+				this.#pendingStep = null;
+				this.#animateToStep(next);
 			}
 		}
 	}

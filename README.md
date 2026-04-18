@@ -124,6 +124,24 @@ Use `trigger="none"` and drive steps from your own code:
 
 The `step` setter animates to the given index. Read `el.step` for the current position and `el.totalSteps` for the count. External control also works alongside built-in triggers.
 
+#### Waiting for the element to be ready
+
+The component's script is bundled as a deferred module, so the custom element isn't defined — and `.totalSteps` / `.isReady` aren't meaningful — the instant the HTML is parsed. Wait for the class to be registered, then either check `isReady` or listen for `magic-move:ready`:
+
+```js
+customElements.whenDefined('magic-move').then(() => {
+  const el = document.querySelector('magic-move')
+  if (el.isReady) init()
+  else el.addEventListener('magic-move:ready', init, { once: true })
+})
+
+function init() {
+  // safe to read .totalSteps and write .step
+}
+```
+
+`whenDefined(...).then(...)` works from both module and inline (`is:inline`) scripts. Calls to `el.step = N` before the element is ready are queued and applied on ready, so simple "jump to step on load" use cases work without waiting.
+
 ## Theming
 
 Define `--shiki-*` CSS custom properties to control syntax colors:
@@ -162,10 +180,14 @@ The `<magic-move>` custom element exposes these properties for external control:
 
 | Property | Type | Description |
 |----------|------|-------------|
-| `.step` | `number` (get/set) | Current step index. Setting it animates to that step. |
-| `.totalSteps` | `number` (get) | Total number of steps. |
+| `.step` | `number` (get/set) | Current step index. Setting it animates to that step. Writes before `isReady` are queued and applied on ready. |
+| `.totalSteps` | `number` (get) | Total number of steps. Returns `0` until the element is ready. |
+| `.isReady` | `boolean` (get) | `true` once the element has hydrated. |
 
-The element dispatches a `magic-move:step` event after each transition:
+The element dispatches two events:
+
+- `magic-move:ready` — fires once, after hydration, when `.step` / `.totalSteps` are safe to use.
+- `magic-move:step` — fires after each transition with `{ step, total }` detail.
 
 ```js
 document.querySelector('magic-move')?.addEventListener('magic-move:step', (e) => {

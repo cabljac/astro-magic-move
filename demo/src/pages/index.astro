@@ -474,7 +474,7 @@ const markdownLines = markdownContent.trim().split("\n").length;
 				<button
 					id="theme-toggle"
 					type="button"
-					class="mt-6 shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 font-mono text-[0.6875rem] text-[var(--site-text-muted)] bg-[var(--site-hover)] border border-[var(--site-badge-border)] rounded-md cursor-pointer transition-colors hover:text-[var(--site-text)] hover:border-[var(--site-text-muted)]"
+					class="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 font-mono text-[0.6875rem] text-[var(--site-text-muted)] bg-[var(--site-hover)] border border-[var(--site-badge-border)] rounded-md cursor-pointer transition-colors hover:text-[var(--site-text)] hover:border-[var(--site-text-muted)]"
 					aria-label="Toggle light/dark mode"
 				>
 					<svg id="icon-sun" class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
@@ -497,7 +497,7 @@ const markdownLines = markdownContent.trim().split("\n").length;
 	</main>
 
 	<script is:inline>
-		{
+		customElements.whenDefined("magic-move").then(() => {
 			const el = document.querySelector("#ext-demo magic-move");
 			const prev = document.getElementById("ext-prev");
 			const next = document.getElementById("ext-next");
@@ -509,10 +509,16 @@ const markdownLines = markdownContent.trim().split("\n").length;
 				next.disabled = el.step === el.totalSteps - 1;
 			}
 
-			prev.addEventListener("click", () => { el.step = el.step - 1; });
-			next.addEventListener("click", () => { el.step = el.step + 1; });
-			el.addEventListener("magic-move:step", update);
-		}
+			function start() {
+				update();
+				prev.addEventListener("click", () => { el.step = el.step - 1; });
+				next.addEventListener("click", () => { el.step = el.step + 1; });
+				el.addEventListener("magic-move:step", update);
+			}
+
+			if (el.isReady) start();
+			else el.addEventListener("magic-move:ready", start, { once: true });
+		});
 	</script>
 
 	<script is:inline define:vars={{ markdownContent }}>
