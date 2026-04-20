@@ -142,6 +142,52 @@ function init() {
 
 `whenDefined(...).then(...)` works from both module and inline (`is:inline`) scripts. Calls to `el.step = N` before the element is ready are queued and applied on ready, so simple "jump to step on load" use cases work without waiting.
 
+### Loading code from real source files
+
+Template literals in frontmatter drift from the real source — if you refactor the file, the animation silently lies. Use Vite's `?raw` import to read the real file, then pair with the `slice` / `region` helpers:
+
+```astro
+---
+import { MagicMove } from 'astro-magic-move';
+import { slice, region } from 'astro-magic-move/helpers';
+import gen from '../src/generate.ts?raw';
+---
+
+<!-- explicit line range, 1-indexed inclusive -->
+<MagicMove steps={[
+  slice(gen, 10, 17),
+  slice(gen, 10, 23),
+  slice(gen, 10, 30),
+]} lang="ts" trigger="click" />
+```
+
+For refactor-safe ranges, mark regions in the source with VS Code's standard `#region` comments (named — plain unnamed `// #region` is ignored):
+
+```ts
+// generate.ts
+// #region v1-schema
+const spec = Schema.parse(output);
+// #endregion
+
+// #region v2-structural
+const spec = Schema.parse(output);
+assertUniqueIds(spec);
+// #endregion
+```
+
+```astro
+<MagicMove steps={[
+  region(gen, 'v1-schema'),
+  region(gen, 'v2-structural'),
+]} lang="ts" trigger="click" />
+```
+
+`region` strips marker lines and de-indents by the minimum common indent, so a block extracted from inside a function renders flush-left. Both helpers throw at build time on missing names or out-of-range indices — a missing region fails the build with a clear error rather than shipping a blank animation.
+
+`?raw` imports resolve the file via Vite, so project-relative paths, TS path aliases, and workspace imports all work. Files outside the Astro project root need `server.fs.allow` configured in `astro.config.mjs`.
+
+Nested `#region` markers of any name are depth-counted (an inner `#endregion` won't close the outer region) and stripped from the output. VS Code also folds unnamed `// #region`; those are ignored by `region()` since extraction needs a name to target.
+
 ## Theming
 
 Define `--shiki-*` CSS custom properties to control syntax colors:
@@ -194,6 +240,26 @@ document.querySelector('magic-move')?.addEventListener('magic-move:step', (e) =>
   console.log(`Step ${e.detail.step + 1} of ${e.detail.total}`)
 })
 ```
+
+### TypeScript
+
+Importing from `astro-magic-move` augments `HTMLElementTagNameMap` and `HTMLElementEventMap`, so the DOM API is typed with no casts or generic parameters:
+
+```ts
+import 'astro-magic-move';
+
+const el = document.querySelector('magic-move');
+if (el) {
+  el.step = 2;                         // typed number setter
+  const n: number = el.totalSteps;     // typed
+  el.addEventListener('magic-move:step', (e) => {
+    e.detail.step;                      // typed as number
+    e.detail.total;                     // typed as number
+  });
+}
+```
+
+For consumers who want to reference the types explicitly: `MagicMoveElement`, `MagicMoveStepEvent`, and `MagicMoveReadyEvent` are exported from the package root.
 
 ## License
 

@@ -2,8 +2,10 @@
 export const prerender = true;
 
 import { MagicMove } from "astro-magic-move";
+import { slice } from "astro-magic-move/helpers";
 import Base from "../layouts/Base.astro";
 import "astro-magic-move/styles";
+import externalControlSource from "../samples/external-control.ts?raw";
 
 // ── Hero: auto-play ──────────────────────────────────────
 const heroSteps = [
@@ -141,26 +143,13 @@ const triggerSteps = [
 ];
 
 // ── External control ─────────────────────────────────────
+// Progressive snapshots sliced from a real source file (`samples/external-control.ts`)
+// via Vite's `?raw` import — this is the pattern the blog post is here to demo.
 const externalSteps = [
-`const el = document.querySelector('magic-move')`,
-
-`const el = document.querySelector('magic-move')
-
-el.step = 2`,
-
-`const el = document.querySelector('magic-move')
-
-el.step = 2
-el.totalSteps // => 4`,
-
-`const el = document.querySelector('magic-move')
-
-el.step = 2
-el.totalSteps // => 4
-
-el.addEventListener('magic-move:step', (e) => {
-  console.log(e.detail.step, e.detail.total)
-})`,
+	slice(externalControlSource, 1, 1),
+	slice(externalControlSource, 1, 3),
+	slice(externalControlSource, 1, 4),
+	slice(externalControlSource, 1, 8),
 ];
 
 // ── CSS variables theming ────────────────────────────────

@@ -51,3 +51,33 @@ export interface MagicMoveProps {
 	 */
 	class?: string;
 }
+
+/**
+ * Public shape of the `<magic-move>` custom element. Use with
+ * `document.querySelector('magic-move')` — the tag-name map augmentation
+ * below makes the cast automatic.
+ */
+export interface MagicMoveElement extends HTMLElement {
+	/** Current step index. Setting it animates to that step. Writes before `isReady` are queued. */
+	step: number;
+	/** Total number of steps. Returns 0 until the element is ready. */
+	readonly totalSteps: number;
+	/** True once the element has hydrated and is safe to drive. */
+	readonly isReady: boolean;
+}
+
+/** Dispatched after each transition. `detail.step` is the new index; `detail.total` is `totalSteps`. */
+export type MagicMoveStepEvent = CustomEvent<{ step: number; total: number }>;
+
+/** Dispatched once, after hydration, when `.step` / `.totalSteps` are safe to use. */
+export type MagicMoveReadyEvent = CustomEvent;
+
+declare global {
+	interface HTMLElementTagNameMap {
+		"magic-move": MagicMoveElement;
+	}
+	interface HTMLElementEventMap {
+		"magic-move:ready": MagicMoveReadyEvent;
+		"magic-move:step": MagicMoveStepEvent;
+	}
+}

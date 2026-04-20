@@ -1,2 +1,7 @@
 export { default as MagicMove } from "./src/MagicMove.astro";
-export type { MagicMoveProps } from "./src/types";
+export type {
+	MagicMoveElement,
+	MagicMoveProps,
+	MagicMoveReadyEvent,
+	MagicMoveStepEvent,
+} from "./src/types";

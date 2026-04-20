@@ -10,7 +10,8 @@
       "!**/dist",
       "!**/.astro",
       "!**/.wrangler",
-      "!demo/src/pages"
+      "!demo/src/pages",
+      "!demo/src/samples"
     ]
   },
   "css": {
