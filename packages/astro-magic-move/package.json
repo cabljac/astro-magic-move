@@ -11,6 +11,7 @@
   },
   "homepage": "https://astro-magic-move.dev",
   "scripts": {
+    "prepublishOnly": "cp ../../README.md README.md",
     "test": "vitest run",
     "test:watch": "vitest"
   },
@@ -20,6 +21,7 @@
     "./styles": "./styles/magic-move.css"
   },
   "files": [
+    "README.md",
     "index.ts",
     "src/",
     "!src/**/*.test.ts",

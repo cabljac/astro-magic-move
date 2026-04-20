@@ -3,3 +3,6 @@ dist/
 .astro/
 .wrangler/
 .claude/
+
+# Copied from repo root by prepublishOnly — don't track the duplicate
+packages/astro-magic-move/README.md
