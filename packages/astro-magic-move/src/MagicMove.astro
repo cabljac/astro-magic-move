@@ -76,6 +76,13 @@ const stepsJson = JSON.stringify(compiledSteps);
 <script>
 	import { MagicMoveRenderer } from "shiki-magic-move/renderer";
 
+	// Runtime guard so the class declaration doesn't blow up when the <script>
+	// block accidentally ends up in an SSR module graph (a known Astro seam
+	// with .astro files inside node_modules and MDX-rendered components).
+	// In the browser this is true; in Node/Cloudflare Workers it's false and
+	// we skip declaring the custom element entirely — the client bundle reaches
+	// the browser as usual and registers the element there.
+	if (typeof HTMLElement !== "undefined" && typeof customElements !== "undefined") {
 	class MagicMoveElement extends HTMLElement {
 		#renderer: MagicMoveRenderer | null = null;
 		#steps: any[] = [];
@@ -241,6 +248,7 @@ const stepsJson = JSON.stringify(compiledSteps);
 
 	if (!customElements.get("magic-move")) {
 		customElements.define("magic-move", MagicMoveElement);
+	}
 	}
 </script>
 

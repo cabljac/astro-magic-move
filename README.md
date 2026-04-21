@@ -40,6 +40,18 @@ import 'astro-magic-move/styles'
 ---
 ```
 
+### SSR note
+
+Tokenization runs in Astro frontmatter at **build time** — it uses Shiki, which loads an Oniguruma WebAssembly module. Build-time Node has WASM; most serverless runtimes (Cloudflare Workers, etc.) don't, so pages containing `<MagicMove>` must be prerendered:
+
+```astro
+---
+export const prerender = true
+---
+```
+
+This is the default under `output: 'static'`. Under `output: 'server'` or a hybrid setup, add the line to each page that renders the component. The `<script>` side of the component is defensively guarded against accidental SSR evaluation (a known Astro hoisting seam with node_modules `.astro` files and MDX), but the frontmatter Shiki call isn't bypassable — tokenization has to happen somewhere WASM runs.
+
 ## Usage
 
 ### Before / After
